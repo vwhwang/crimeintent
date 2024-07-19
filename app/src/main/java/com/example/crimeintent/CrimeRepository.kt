@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.crimeintent.database.CrimeDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
@@ -20,12 +21,8 @@ class CrimeRepository private constructor(context: Context) {
         .createFromAsset(DATABASE_NAME)
         .build()
 
-    suspend fun getCrimes(): List<Crime> {
-        return withContext(Dispatchers.IO) {
-            database.crimeDao().getCrimes()
-        }
-    }
-
+    fun getCrimes(): Flow<List<Crime>> =
+        database.crimeDao().getCrimes()
     suspend fun getCrime(id: UUID) : Crime {
         return withContext(Dispatchers.IO) {
             database.crimeDao().getCrime(id)

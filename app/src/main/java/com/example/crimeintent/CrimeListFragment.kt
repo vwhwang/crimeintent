@@ -14,6 +14,7 @@ import com.example.crimeintent.databinding.FragmentCrimeListBinding
 import kotlinx.coroutines.launch
 
 private const val TAG = "CrimeListFragment"
+
 class CrimeListFragment : Fragment() {
 
     private val crimeListViewModel: CrimeListViewModel by viewModels()
@@ -41,8 +42,9 @@ class CrimeListFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val crimes = crimeListViewModel.loadCrimes()
-                binding.crimeRecycleView.adapter = CrimeListAdapter(crimes)
+                crimeListViewModel.crimes.collect { crimes ->
+                    binding.crimeRecycleView.adapter = CrimeListAdapter(crimes)
+                }
             }
         }
     }
