@@ -1,14 +1,17 @@
 package com.example.crimeintent
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.crimeintent.databinding.FragmentCrimeListBinding
+import kotlinx.coroutines.launch
 
 private const val TAG = "CrimeListFragment"
 class CrimeListFragment : Fragment() {
@@ -21,11 +24,6 @@ class CrimeListFragment : Fragment() {
             "Cannot access binding because it is null, Is the view visible?"
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "Total crimes: ${crimeListViewModel.crimes.size}")
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,11 +33,18 @@ class CrimeListFragment : Fragment() {
 
         binding.crimeRecycleView.layoutManager = LinearLayoutManager(context)
 
-        val crimes = crimeListViewModel.crimes
-        val adapter = CrimeListAdapter(crimes)
-        binding.crimeRecycleView.adapter = adapter
-
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val crimes = crimeListViewModel.loadCrimes()
+                binding.crimeRecycleView.adapter = CrimeListAdapter(crimes)
+            }
+        }
     }
 
     override fun onDestroyView() {
