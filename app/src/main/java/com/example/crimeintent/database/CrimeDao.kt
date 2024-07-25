@@ -1,6 +1,7 @@
 package com.example.crimeintent.database
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.crimeintent.Crime
@@ -17,4 +18,7 @@ interface CrimeDao {
 
     @Update
     fun updateCrime(crime: Crime)
+
+    @Insert
+    fun addCrime(crime: Crime)
 }
