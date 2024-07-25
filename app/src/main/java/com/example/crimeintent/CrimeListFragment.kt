@@ -7,8 +7,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toolbar
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -46,7 +44,7 @@ class CrimeListFragment : Fragment() {
     ): View? {
         _binding = FragmentCrimeListBinding.inflate(inflater, container, false)
 
-        binding.crimeRecycleView.layoutManager = LinearLayoutManager(context)
+        binding.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
 
         return binding.root
     }
@@ -57,8 +55,16 @@ class CrimeListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { crimes ->
-                    binding.crimeRecycleView.adapter = CrimeListAdapter(crimes) { crimeId ->
-                        findNavController().navigate(CrimeListFragmentDirections.showCrimeDetail(crimeId))
+                    if (crimes.isEmpty()) {
+                        binding.imageButton.visibility = View.VISIBLE
+                        binding.crimeRecyclerView.visibility = View.GONE
+                        binding.imageButton.setOnClickListener {
+                            showNewCrime()
+                        }
+                    } else {
+                        binding.crimeRecyclerView.adapter = CrimeListAdapter(crimes) { crimeId ->
+                            findNavController().navigate(CrimeListFragmentDirections.showCrimeDetail(crimeId))
+                        }
                     }
                 }
             }
