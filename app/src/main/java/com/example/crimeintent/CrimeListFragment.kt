@@ -62,6 +62,8 @@ class CrimeListFragment : Fragment() {
                             showNewCrime()
                         }
                     } else {
+                        binding.imageButton.visibility = View.GONE
+                        binding.crimeRecyclerView.visibility = View.VISIBLE
                         binding.crimeRecyclerView.adapter = CrimeListAdapter(crimes) { crimeId ->
                             findNavController().navigate(CrimeListFragmentDirections.showCrimeDetail(crimeId))
                         }
