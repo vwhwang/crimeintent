@@ -42,7 +42,10 @@ class CrimeDetailFragment : Fragment() {
     private val selectSuspect = registerForActivityResult(
         ActivityResultContracts.PickContact()
     ) { uri ->
-        uri?.let { parseContactSelection(it) }
+        uri?.let {
+            parseContactSelection(it)
+            parsePhone(it)
+        }
     }
     private val binding
         get() = checkNotNull(_binding) {
@@ -90,6 +93,7 @@ class CrimeDetailFragment : Fragment() {
                 null
             )
             crimeSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
+            callSuspect.setText(R.string.call_suspect)
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -160,8 +164,17 @@ class CrimeDetailFragment : Fragment() {
                 reportIntent,
                 getString(R.string.send_report)
             )
-
             startActivity(chooserIntent)
+        }
+
+
+        binding.callSuspect.setOnClickListener {
+            val callContactIntent =
+                Intent(Intent.ACTION_DIAL).apply {
+                    val phone = crime.phoneNumber
+                    data = Uri.parse("tel:$phone")
+                }
+            startActivity(callContactIntent)
         }
     }
 
@@ -194,6 +207,40 @@ class CrimeDetailFragment : Fragment() {
                 val suspect = cursor.getString(0)
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(suspect = suspect)
+                }
+            }
+        }
+    }
+
+    private fun parsePhone(contactUri: Uri) {
+
+        val queryFieldsId = arrayOf(ContactsContract.Contacts._ID)
+        val cursorId = requireActivity().contentResolver
+            .query(contactUri, queryFieldsId, null, null, null)
+        cursorId?.use {
+            if (it.count == 0) {
+                return
+            }
+
+            it.moveToFirst()
+            val contactId = it.getString(0)
+
+            val phoneURI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+
+            val phoneNumberQueryFields = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+            val phoneWhereClause = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
+
+            val phoneQueryParameters = arrayOf(contactId)
+
+            val phoneCursor = requireActivity().contentResolver
+                .query(phoneURI, phoneNumberQueryFields, phoneWhereClause, phoneQueryParameters, null )
+
+            phoneCursor?.use { cursorPhone ->
+                cursorPhone.moveToFirst()
+                val phoneNumValue = cursorPhone.getString(0)
+                crimeDetailViewModel.updateCrime { oldCrime ->
+                    oldCrime.copy(phoneNumber = phoneNumValue)
                 }
             }
         }
