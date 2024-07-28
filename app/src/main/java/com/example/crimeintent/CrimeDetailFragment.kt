@@ -181,6 +181,12 @@ class CrimeDetailFragment : Fragment() {
             crimeSuspect.text = crime.suspect.ifEmpty {
                 getString(R.string.crime_suspect_text)
             }
+
+            crimePhoto.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.showPhoto(crime.photoFileName ?: "")
+                )
+            }
         }
 
         binding.crimeReport.setOnClickListener {
